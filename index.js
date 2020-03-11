@@ -55,7 +55,7 @@ const get_credits_ds = async page => {
   // OLD code to insert manual alias
   //   await page.goto("http://console.aws.amazon.com/");
   //   await page.click("#iam_user_radio_button");
-  //   await page.type("#resolving_input", "datasprintsdev");
+  //   await page.type("#resolving_input", `${process.env.AWS_DS_ACCOUNT}`);
   //   await page.click("#next_button");
   // Better solution
   await page.goto(
@@ -66,19 +66,9 @@ const get_credits_ds = async page => {
   await page.click("#signin_button");
   await page.waitForNavigation();
 
-  //   await page.click("#nav-usernameMenu");
-
-  //   await page.waitForSelector("#aws-billing-console");
-
-  //   await page.click("#aws-billing-console");
-  //   await page.waitForNavigation();
   await page.goto(
     "https://console.aws.amazon.com/billing/home?region=sa-east-1#/credits"
   );
-
-  //   await page.click(
-  //     "#billing-console-root > div > div > div.navigation--waI62.span2--3ul0Q > div > div.visibleLg--1cvP9 > div > ul > li:nth-child(13) > a"
-  //   );
 
   await page.waitForSelector(
     "#billing-console-root > div > div > div.content--2j5zk.span10--28Agl > div > div > div > div > div > div:nth-child(3) > div > p > span"

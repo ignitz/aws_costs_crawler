@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 
 const get_credits_coletix = async () => {
   const browser = await puppeteer.launch({
-    headless: false
+    headless: false,
   });
 
   const page = await browser.newPage();
@@ -51,7 +51,7 @@ const get_credits_coletix = async () => {
   }
 };
 
-const get_credits_ds = async page => {
+const get_credits_ds = async (page) => {
   // OLD code to insert manual alias
   //   await page.goto("http://console.aws.amazon.com/");
   //   await page.click("#iam_user_radio_button");
@@ -82,7 +82,7 @@ const get_credits_ds = async page => {
   return datasprints_credits;
 };
 
-const get_costs_from_both_accounts = async page => {
+const get_costs_from_both_accounts = async (page) => {
   //   Now go to Cost Explorer
   console.log("Go to Cost Reports page");
   await page.goto("https://console.aws.amazon.com/cost-reports/home");
@@ -129,23 +129,44 @@ const get_costs_from_both_accounts = async page => {
 
   //   Pega dos dados queriados que queremos
   console.log("Geting the cost data in table");
-  selector =
-    "#report-table > costs-table > div.cost-table-view > div > div.table-body > div.right-container.scroll-x.scroll-y > table > tbody > tr.number.ng-scope.table-row--odd > td:nth-child(40)";
-  await page.waitForSelector(selector);
-  let datasprints_cost = await page.$(selector);
-  datasprints_cost = await datasprints_cost.getProperty("innerText");
-  datasprints_cost = await datasprints_cost.jsonValue();
 
-  selector =
-    "#report-table > costs-table > div.cost-table-view > div > div.table-body > div.right-container.scroll-x.scroll-y > table > tbody > tr:nth-child(3) > td:nth-child(40)";
-  await page.waitForSelector(selector);
-  let coletix_cost = await page.$(selector);
-  coletix_cost = await coletix_cost.getProperty("innerText");
-  coletix_cost = await coletix_cost.jsonValue();
+  let datasprints_cost;
+  {
+    selector =
+      "#report-table > costs-table > div.cost-table-view > div > div.table-body > div.right-container.scroll-x.scroll-y > table > tbody > tr.number.ng-scope.table-row--odd > td";
+    await page.waitForSelector(selector);
+    const table_row = await page.$$(selector);
+
+    if (table_row.length <= 0) {
+      throw "No table for costs found";
+    }
+
+    datasprints_cost = await table_row[table_row.length - 1].getProperty(
+      "innerText"
+    );
+    datasprints_cost = await datasprints_cost.jsonValue();
+  }
+
+  let coletix_cost;
+  {
+    selector =
+      "#report-table > costs-table > div.cost-table-view > div > div.table-body > div.right-container.scroll-x.scroll-y > table > tbody > tr:nth-child(3) > td";
+    await page.waitForSelector(selector);
+    const table_row = await page.$$(selector);
+
+    if (table_row.length <= 0) {
+      throw "No table for costs found";
+    }
+
+    coletix_cost = await table_row[table_row.length - 1].getProperty(
+      "innerText"
+    );
+    coletix_cost = await coletix_cost.jsonValue();
+  }
 
   return {
     datasprints: datasprints_cost,
-    coletix: coletix_cost
+    coletix: coletix_cost,
   };
 };
 
@@ -153,7 +174,7 @@ const get_costs_from_both_accounts = async page => {
   const coletix_credits = await get_credits_coletix();
 
   const browser = await puppeteer.launch({
-    headless: false
+    headless: false,
   });
 
   const page = await browser.newPage();
@@ -167,7 +188,7 @@ const get_costs_from_both_accounts = async page => {
 
     const response = {
       credits: { datasprints: datasprints_credits, coletix: coletix_credits },
-      costs: costs
+      costs: costs,
     };
 
     console.log(response);
